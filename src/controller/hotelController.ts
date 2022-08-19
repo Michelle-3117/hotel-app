@@ -8,18 +8,19 @@ import { createHotelSchema, updateHotelSchema, options } from "../utils/utils";
 export async function createHotels(req:Request | any, res: Response, next:NextFunction){
     const id = uuidv4()
     try {
-        const verified = req.user;
+        const userId = req.user.id;
         const validationResult = createHotelSchema.validate(req.body,options)
         if(validationResult.error){
            return res.status(400).json({
               Error: validationResult.error.details[0].message
            })
         }
-        const record = await hotelInstance.create({id, ...req.body, userId: verified.id})
-        res.status(201).json({
-            msg: "you have sucessfully created a hotel listing",
-            record
-        })
+        const record = await hotelInstance.create({id, ...req.body, userId})
+        // res.status(201).json({
+        //     msg: "you have sucessfully created a hotel listing",
+        //     record
+        // })
+        res.redirect("/users/listing1")
     } catch(err) {
         res.status(500).json({
             msg: 'failed to create',
@@ -88,7 +89,7 @@ export async function updateHotels(req:Request, res:Response, next:NextFunction)
             Error: "Cannot find existing hotel"
         })
     }
-    const updateRecord = await record.update({
+    const updateRecord = await record?.update({
         description: description,
         image: image,
         address: address,
@@ -97,11 +98,13 @@ export async function updateHotels(req:Request, res:Response, next:NextFunction)
         numOfBaths: numOfBaths,
         ratings: ratings, 
     })
-    res.status(200).json({
-        msg: "You have successfully updated your hotel",
-        updateRecord
-    })
+    res.redirect("/users/listing1")
+    // res.status(200).json({
+    //     msg: "You have successfully updated your hotel",
+    //     updateRecord
+    // })
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             msg: "failed to update",
             route: "/update/:id"
@@ -120,10 +123,11 @@ export async function deleteHotel(req:Request, res:Response, next:NextFunction){
             })
         }
         const deleteRecord = await record.destroy()
-        return res.status(200).json({
-            msg: "Hotel deleted successfully",
-            deleteRecord
-        })
+        // return res.status(200).json({
+        //     msg: "Hotel deleted successfully",
+        //     deleteRecord
+        // })
+        res.render("listing1")
     } catch (error) {
         res.status(500).json({
             msg: "failed to delete",

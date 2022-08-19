@@ -3,14 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderSecListingPage = exports.renderListingPage = exports.renderHomePage = exports.renderLoginPage = exports.renderRegisterPage = exports.getUsers = exports.loginUser = exports.registerUsers = void 0;
+exports.renderSecListingPage = exports.renderListingPage = exports.renderHomePage = exports.renderLoginPage = exports.renderRegisterPage = exports.logout = exports.getUsers = exports.loginUser = exports.registerUsers = void 0;
 const uuid_1 = require("uuid");
 const user_1 = require("../model/user");
 const hotel_1 = require("../model/hotel");
 const utils_1 = require("../utils/utils");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 async function registerUsers(req, res, next) {
     const user_id = (0, uuid_1.v4)();
+    console.log(req.body);
     try {
         const validationResult = utils_1.registerSchema.validate(req.body, utils_1.options);
         if (validationResult.error) {
@@ -36,11 +38,12 @@ async function registerUsers(req, res, next) {
             phoneNumber: req.body.phoneNumber,
             password: passwordHash,
         });
-        res.redirect("/users/login");
-        res.status(200).json({
-            msg: "you have sucessfully created a user",
-            record
-        });
+        //return res.json(record)
+        res.render("login");
+        // res.status(200).json({
+        //     msg: "you have sucessfully created a user",
+        //     record
+        // })
     }
     catch (err) {
         console.log(err);
@@ -63,6 +66,11 @@ async function loginUser(req, res, next) {
         const hotelUser = await user_1.UserInstance.findOne({ where: { email: req.body.email } });
         const { id } = hotelUser;
         const token = (0, utils_1.generateToken)({ id });
+        res.cookie("auth", token, { httpOnly: true, secure: true });
+        res.cookie("id", id, {
+            httpOnly: true,
+            secure: true
+        });
         const validHotelUser = await bcryptjs_1.default.compare(req.body.password, hotelUser.password);
         if (!validHotelUser) {
             res.status(401).json({
@@ -70,11 +78,12 @@ async function loginUser(req, res, next) {
             });
         }
         if (validHotelUser) {
-            res.status(200).json({
-                message: "Sucessfully logged in",
-                token,
-                hotelUser
-            });
+            // res.status(200).json({
+            //     message: "Sucessfully logged in",
+            //     token,
+            //     hotelUser
+            // })
+            res.redirect('/users/home');
         }
     }
     catch (error) {
@@ -109,6 +118,15 @@ async function getUsers(req, res, next) {
     }
 }
 exports.getUsers = getUsers;
+function logout(req, res) {
+    res.clearCookie('auth');
+    res.clearCookie('id');
+    res.status(200).json({
+        message: "you have successfully logged out"
+    });
+    // res.redirect('/signin')
+}
+exports.logout = logout;
 async function renderRegisterPage(req, res, next) {
     res.render('register');
 }
@@ -122,10 +140,20 @@ async function renderHomePage(req, res, next) {
 }
 exports.renderHomePage = renderHomePage;
 async function renderListingPage(req, res, next) {
-    res.render('listing1');
+    try {
+        const user = await user_1.UserInstance.findOne({ where: { id: req.cookies.id }, include: [{ model: hotel_1.hotelInstance, as: 'hotels' }] });
+        res.render('listing1', { user });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'failed to render listing1' });
+    }
 }
 exports.renderListingPage = renderListingPage;
 async function renderSecListingPage(req, res, next) {
-    res.render('listing2');
+    const data = await (0, node_fetch_1.default)('http://localhost:4000/hotels/read').then((response) => response.json());
+    const useData = data.record;
+    res.render('listing2', { useData });
 }
 exports.renderSecListingPage = renderSecListingPage;
+;

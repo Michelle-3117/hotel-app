@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "ts-node-dev --repawn ./bin/www",
+    "dev": "nodemon ./bin/www",
     "compile": "tsc -w"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
     "debug": "~2.6.9",
     "dotenv": "^16.0.1",
     "ejs": "^3.1.8",
@@ -18,6 +19,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "morgan": "~1.9.1",
+    "node-fetch": "2",
     "nodemon": "^2.0.19",
     "sequelize": "^6.21.3",
     "sqlite3": "^5.0.11",
@@ -35,6 +37,7 @@
     "@types/joi": "^17.2.3",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/morgan": "^1.9.3",
+    "@types/node-fetch": "^2.6.2",
     "@types/uuid": "^8.3.4"
   }
 }

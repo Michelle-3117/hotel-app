@@ -11,6 +11,6 @@ const hotelController_1 = require("../controller/hotelController");
 router.post('/create', auth_1.auth, hotelController_1.createHotels);
 router.get('/read', hotelController_1.getHotels);
 router.get("/read/:id", hotelController_1.getSingleHotel);
-router.patch("/update/:id", auth_1.auth, hotelController_1.updateHotels);
+router.post("/update/:id", auth_1.auth, hotelController_1.updateHotels);
 router.delete('/delete/:id', auth_1.auth, hotelController_1.deleteHotel);
 exports.default = router;

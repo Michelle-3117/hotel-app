@@ -8,14 +8,15 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const secret = process.env.JWT_SECRET;
 const user_1 = require("../model/user");
 async function auth(req, res, next) {
-    const authorization = req.headers.authorization;
+    const authorization = req.cookies.auth;
+    //console.log(req.cookies)
     try {
         if (!authorization) {
             res.status(401).send({
                 Error: 'Kindly sign in as a user'
             });
         }
-        const token = authorization?.slice(7, authorization.length);
+        const token = authorization;
         let verified = jsonwebtoken_1.default.verify(token, secret);
         if (!verified) {
             return res.status(401).json({

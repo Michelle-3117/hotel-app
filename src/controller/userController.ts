@@ -1,13 +1,15 @@
-import {Request, Response, NextFunction} from "express"
+import {Request, Response, NextFunction, response} from "express"
 import {v4 as uuidv4} from 'uuid'
 import { UserInstance } from "../model/user";
 import { hotelInstance } from "../model/hotel";
 import { registerSchema, loginSchema, generateToken, options } from "../utils/utils";
 import bcrypt from "bcryptjs"
+import fetch from "node-fetch";
 
 
 export async function registerUsers(req:Request, res:Response, next:NextFunction){
     const user_id = uuidv4()
+    console.log(req.body)
     try {
         const validationResult = registerSchema.validate(req.body, options)
         if(validationResult.error){
@@ -36,11 +38,12 @@ export async function registerUsers(req:Request, res:Response, next:NextFunction
             password: passwordHash,
 
         })
-        res.redirect("/users/login")
-        res.status(200).json({
-            msg: "you have sucessfully created a user",
-            record
-        })
+        //return res.json(record)
+        res.render("login")
+        // res.status(200).json({
+        //     msg: "you have sucessfully created a user",
+        //     record
+        // })
     } catch(err) {
         console.log(err)
         res.status(500).json({
@@ -55,27 +58,35 @@ export async function loginUser(req:Request, res:Response, next:NextFunction){
     try {
         const validationResult = loginSchema.validate(req.body, options)
         if(validationResult.error){
-            return res.status(400).json({
-                Error:validationResult.error.details[0].message
-            })
-        }
-        const hotelUser = await UserInstance.findOne({where: {email:req.body.email}}) as unknown as {[key:string]:string}
+                return res.status(400).json({
+                        Error:validationResult.error.details[0].message
+                    })
+                }
+                const hotelUser = await UserInstance.findOne({where: {email:req.body.email}}) as unknown as {[key:string]:string}
+                
+                const {id} = hotelUser
+                const token = generateToken({id})
+                res.cookie("auth", token, {httpOnly:true, secure: true})
+                res.cookie("id", id, {
+                    httpOnly:true,
+                    secure:true
+                })
 
-        const {id} = hotelUser
-        const token = generateToken({id})
-        const validHotelUser = await bcrypt.compare(req.body.password, hotelUser.password);
-
-        if(!validHotelUser){
-            res.status(401).json({
+                const validHotelUser = await bcrypt.compare(req.body.password, hotelUser.password);
+        
+                
+                if(!validHotelUser){
+                res.status(401).json({
                 message: "password do not match",
-            })
+                })
         }
         if(validHotelUser){
-            res.status(200).json({
-                message: "Sucessfully logged in",
-                token,
-                hotelUser
-            })
+            // res.status(200).json({
+            //     message: "Sucessfully logged in",
+            //     token,
+            //     hotelUser
+            // })
+             res.redirect('/users/home')
         }
     } catch (error) {
         res.status(500).json({
@@ -108,6 +119,14 @@ export async function getUsers(req:Request, res:Response, next:NextFunction){
         })
     }
 }
+export  function logout(req: Request, res: Response){
+    res.clearCookie('auth');
+    res.clearCookie('id');
+    res.status(200).json({
+        message: "you have successfully logged out"
+    })
+    // res.redirect('/signin')
+}
 
 export async function renderRegisterPage(req: Request, res: Response, next: NextFunction) {
     res.render('register')
@@ -119,8 +138,18 @@ export async function renderHomePage(req: Request, res: Response, next: NextFunc
     res.render('home')
 }
 export async function renderListingPage(req: Request, res: Response, next: NextFunction) {
-    res.render('listing1')
+    try {
+    const user = await UserInstance.findOne({where: {id: req.cookies.id}, include:[{model: hotelInstance, as: 'hotels'}]});
+    res.render('listing1', {user})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({message: 'failed to render listing1'})
+        
+    }
+   
 }
-export async function renderSecListingPage(req: Request, res: Response, next: NextFunction) {
-    res.render('listing2')
-}
+export  async function renderSecListingPage(req: Request, res: Response, next: NextFunction) {
+    const data = await fetch('http://localhost:4000/hotels/read').then((response) => response.json());
+    const useData = data.record;
+    res.render('listing2', {useData});
+};

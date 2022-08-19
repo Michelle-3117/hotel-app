@@ -9,7 +9,7 @@ import { createHotels, deleteHotel, getHotels, getSingleHotel, updateHotels} fro
 router.post('/create', auth, createHotels);
 router.get('/read', getHotels);
 router.get("/read/:id", getSingleHotel);
-router.patch("/update/:id", auth, updateHotels);
+router.post("/update/:id", auth, updateHotels);
 router.delete('/delete/:id', auth, deleteHotel)
 
 export default router;

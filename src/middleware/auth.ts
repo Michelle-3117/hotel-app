@@ -4,16 +4,18 @@ const secret = process.env.JWT_SECRET as string
 import { UserInstance } from "../model/user";
 
 export async function auth(req:Request |any, res:Response, next:NextFunction){
-    const authorization = req.headers.authorization;
+    const authorization = req.cookies.auth
+    //console.log(req.cookies)
     try {
         if(!authorization){
             res.status(401).send({
                 Error: 'Kindly sign in as a user'
             })
         }
-        const token = authorization?.slice(7, authorization.length) as string
+        const token = authorization
         
         let verified = jwt.verify(token, secret);
+     
 
         if(!verified){
             return res.status(401).json({
@@ -22,7 +24,6 @@ export async function auth(req:Request |any, res:Response, next:NextFunction){
         }
 
         const { id } = verified as {[key: string]: string}
-      
 
         const user = await UserInstance.findOne({where: {id}})
         if(!user){

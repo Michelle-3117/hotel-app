@@ -2,14 +2,15 @@ import express, { Request, Response, NextFunction } from "express";
 
 const router = express.Router();
 
-import { loginUser, registerUsers, getUsers, renderRegisterPage, renderLoginPage, renderHomePage, renderListingPage, renderSecListingPage} from "../controller/userController";
+import { loginUser, registerUsers, getUsers, renderRegisterPage, renderLoginPage, renderHomePage, renderListingPage, renderSecListingPage, logout} from "../controller/userController";
 
 
 
 /* GET home page. */
 router.post('/register', registerUsers)
-router.post('/login', loginUser)
+router.post('/logins', loginUser)
 router.get('/allusers',getUsers)
+router.post('/logout', logout)
 
 // ejs routes
 

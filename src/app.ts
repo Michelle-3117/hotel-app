@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import db from "./config/database.config";
 
-db.sync({alter:true}).then(() => {
+db.sync().then(() => {
   console.log('Database connected successfully')
 }).catch(err => {
   console.log(err)

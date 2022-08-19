@@ -8,8 +8,9 @@ const router = express_1.default.Router();
 const userController_1 = require("../controller/userController");
 /* GET home page. */
 router.post('/register', userController_1.registerUsers);
-router.post('/login', userController_1.loginUser);
+router.post('/logins', userController_1.loginUser);
 router.get('/allusers', userController_1.getUsers);
+router.post('/logout', userController_1.logout);
 // ejs routes
 router.get('/signup', userController_1.renderRegisterPage);
 router.get('/signin', userController_1.renderLoginPage);
