@@ -149,7 +149,7 @@ export async function renderListingPage(req: Request, res: Response, next: NextF
    
 }
 export  async function renderSecListingPage(req: Request, res: Response, next: NextFunction) {
-    const data = await fetch('http://localhost:4000/hotels/read').then((response) => response.json());
+    const data = await fetch('https://localhost:4000/hotels/read').then((response) => response.json());
     const useData = data.record;
     res.render('listing2', {useData});
 };
